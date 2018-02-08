@@ -1,5 +1,5 @@
-import requests
 import json
+import requests
 
 
 def pair_to_str(pair):
@@ -20,7 +20,6 @@ class ShapeShiftAPI:
 		if method == 'get':
 			response = json.loads(requests.get(url).text)
 			return response
-
 		elif method == 'post':
 			response = json.loads(requests.post(url, data=json.dumps(data)))
 			return response
@@ -78,13 +77,22 @@ class ShapeShiftAPI:
 			If [max] is not specified this will return 5 transactions.
 			Also, [max] must be a number between 1 and 50 (inclusive).
 		"""
-		if number_of_tx >= 1 and number_of_tx <= 50:
+		if number_of_tx == '':
 			command = 'recenttx/'
 			method = 'get'
-			url = self.base_url + command + number_of_tx
+			url = self.base_url + command
 			return self.do_request(url, method)
 		else:
-			return 'Number of transactions must be between 1 and 50.'
+			try:
+				if int(number_of_tx) >= 1 and int(number_of_tx) <= 50:
+					command = 'recenttx/'
+					method = 'get'
+					url = self.base_url + command + str(number_of_tx)
+					return self.do_request(url, method)
+				else:
+					return 'Number of transactions must be between 1 and 50.'
+			except ValueError as err:
+				print('ValueError: {e}.'.format(e=err))
 
 
 	def get_deposit_status_to_address(self, addr):
@@ -211,8 +219,7 @@ class ShapeShiftAPI:
 			data type: JSON
 			 
 			//1. Send amount request
-			  Data required:
-			 
+			 Data required:
 			amount          = the amount to be sent to the withdrawal address
 			withdrawal      = the address for coin to be sent to
 			pair            = what coins are being exchanged in the form [input coin]_[output coin]  ie ltc_btc
@@ -223,16 +230,7 @@ class ShapeShiftAPI:
 			 
 			example data {"amount":123, "withdrawal":"123ABC", "pair":"ltc_btc", returnAddress:"BBBBBBB"}
 
-		"""
-		url = 'https://www.shapeshift.io/sendamount'
-		method = 'post'
-		return self.do_request(url, method, data)
-
-	def send_quoted_price(self, data={}):
-		"""
 			//2. Quoted Price request
-	 
-	 
 			//Note : This request will only return information about a quoted rate
 			//       This request will NOT generate the deposit address.
 			 
@@ -241,6 +239,7 @@ class ShapeShiftAPI:
 			pair    = what coins are being exchanged in the form [input coin]_[output coin]  ie ltc_btc
 			 
 			example data {"amount":123, "pair":"ltc_btc"}
+
 		"""
 		url = 'https://www.shapeshift.io/sendamount'
 		method = 'post'
